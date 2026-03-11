@@ -6,6 +6,7 @@ on:
     paths:
       - training/**
       - data/**
+      - .github/workflows/train.yaml
 
 jobs:
   train:
