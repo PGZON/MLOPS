@@ -9,7 +9,7 @@ from huggingface_hub import hf_hub_download
 app = FastAPI()
 
 MODEL_PATH = hf_hub_download(
-    repo_id="prathamesh0505/car-price-model",
+    repo_id="PG05/car-price-model",
     filename="car_price_pipeline.pkl",
     token=os.environ.get("HF_TOKEN")
 )

@@ -40,7 +40,7 @@ api = HfApi()
 api.upload_file(
     path_or_fileobj=model_path,
     path_in_repo="car_price_pipeline.pkl",
-    repo_id="prathamesh0505/car-price-model",
+    repo_id="PG05/car-price-model",
     repo_type="model",
     token=os.environ["HF_TOKEN"]
 )
