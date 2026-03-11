@@ -1,14 +1,22 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import pickle
 import pandas as pd
+import pickle
+import os
+
+from huggingface_hub import hf_hub_download
 
 app = FastAPI()
 
-# Load model
-model = pickle.load(open("model/car_price_pipeline.pkl", "rb"))
+MODEL_PATH = hf_hub_download(
+    repo_id="prathamesh0505/car-price-model",
+    filename="car_price_pipeline.pkl",
+    token=os.environ.get("HF_TOKEN")
+)
 
-# Request body schema
+model = pickle.load(open(MODEL_PATH, "rb"))
+
+
 class CarFeatures(BaseModel):
     name: str
     company: str
@@ -19,15 +27,13 @@ class CarFeatures(BaseModel):
 
 @app.get("/")
 def health():
-    return {"status": "model running"}
+    return {"status": "model loaded"}
 
 
 @app.post("/predict")
 def predict(car: CarFeatures):
 
-    # Convert request JSON → dataframe
     df = pd.DataFrame([car.dict()])
-
     prediction = model.predict(df)[0]
 
     return {"predicted_price": float(prediction)}

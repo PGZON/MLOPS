@@ -1,20 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: car-model
+  name: car-price-api
+  labels:
+    app: car-price-api
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
-      app: car-model
+      app: car-price-api
+
   template:
     metadata:
       labels:
-        app: car-model
+        app: car-price-api
+
     spec:
       containers:
-      - name: car-model
-        image: prathamesh0505/mlops:v1
-        imagePullPolicy: Always
+      - name: car-price-container
+        image: prathamesh0505/mlops:latest
         ports:
         - containerPort: 8000
+
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: huggingface-secret
+              key: HF_TOKEN

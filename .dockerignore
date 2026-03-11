@@ -1,0 +1,6 @@
+training/
+data/
+.github/
+*.ipynb
+k8s/
+model/

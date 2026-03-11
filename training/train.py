@@ -1,46 +1,48 @@
 import pandas as pd
 import pickle
-from sklearn.model_selection import train_test_split
-from sklearn.compose import ColumnTransformer
+import os
+
 from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
 
-# Load dataset
+from huggingface_hub import HfApi
+
 df = pd.read_csv("data/CleanedData.csv")
 
-# Features
-features = ['name', 'company', 'year', 'kms_driven', 'fuel_type']
-
-X = df[features]
+X = df[['name','company','year','kms_driven','fuel_type']]
 y = df['Price']
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+categorical = ['name','company','fuel_type']
+numeric = ['year','kms_driven']
 
-# Preprocessing
-categorical_features = ['name', 'company', 'fuel_type']
-numeric_features = ['year', 'kms_driven']
-
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features),
-        ('num', 'passthrough', numeric_features)
-    ]
-)
-
-# Pipeline
-model = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('regressor', LinearRegression())
+preprocessor = ColumnTransformer([
+    ('cat', OneHotEncoder(handle_unknown="ignore"), categorical),
+    ('num', 'passthrough', numeric)
 ])
 
-# Train model
-model.fit(X_train, y_train)
+pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', LinearRegression())
+])
 
-# Save model
-pickle.dump(model, open("model/car_price_pipeline.pkl", "wb"))
+pipeline.fit(X,y)
 
-print("Model retrained successfully")
+os.makedirs("model", exist_ok=True)
+
+model_path = "model/car_price_pipeline.pkl"
+
+pickle.dump(pipeline, open(model_path,"wb"))
+
+api = HfApi()
+
+api.upload_file(
+    path_or_fileobj=model_path,
+    path_in_repo="car_price_pipeline.pkl",
+    repo_id="prathamesh0505/car-price-model",
+    repo_type="model",
+    token=os.environ["HF_TOKEN"]
+)
+
+print("Model uploaded to HuggingFace")

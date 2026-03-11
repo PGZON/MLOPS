@@ -1,10 +1,14 @@
-FROM python:3.10
+FROM python:3.10-alpine
 
 WORKDIR /app
 
-COPY . .
+RUN apk add --no-cache gcc musl-dev g++ openblas-dev
 
-RUN pip install -r requirements.txt
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/ app/
 
 EXPOSE 8000
 
