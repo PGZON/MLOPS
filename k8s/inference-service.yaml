@@ -5,4 +5,4 @@ metadata:
 spec:
   predictor:
     sklearn:
-      storageUri: https://huggingface.co/PG05/car-price-model/resolve/main/car_price_pipeline.pkl
+      storageUri: https://huggingface.co/PG05/car-price-model/resolve/main/
