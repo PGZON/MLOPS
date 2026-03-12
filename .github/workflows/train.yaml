@@ -40,7 +40,7 @@ jobs:
         git config user.name "github-actions"
         git config user.email "actions@github.com"
 
-        git add model/car_price_pipeline.pkl
+        git add model/student_score_pipeline.pkl
 
         git diff --staged --quiet || git commit -m "Auto update trained model"
 
