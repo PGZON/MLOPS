@@ -1,43 +1,90 @@
-import pandas as pd
-import pickle
 import os
+import json
+import joblib
+import pandas as pd
 
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error
 
-print("Loading dataset...")
+# -------------------------------
+# Paths
+# -------------------------------
+DATA_PATH = "data/student_scores_dataset.csv"
+MODEL_DIR = "model"
+MODEL_PATH = os.path.join(MODEL_DIR, "student_score_pipeline.pkl")
 
-df = pd.read_csv("data/CleanedData.csv")
+os.makedirs(MODEL_DIR, exist_ok=True)
 
-X = df[['name','company','year','kms_driven','fuel_type']]
-y = df['Price']
+# -------------------------------
+# Load dataset
+# -------------------------------
+df = pd.read_csv(DATA_PATH)
 
-categorical = ['name','company','fuel_type']
-numeric = ['year','kms_driven']
+print("Dataset loaded:", df.shape)
 
-preprocessor = ColumnTransformer([
-    ('cat', OneHotEncoder(handle_unknown="ignore"), categorical),
-    ('num', 'passthrough', numeric)
-])
+# -------------------------------
+# Features and target
+# -------------------------------
+X = df.drop("final_score", axis=1)
+y = df["final_score"]
 
+# -------------------------------
+# Train test split
+# -------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# -------------------------------
+# ML Pipeline
+# -------------------------------
 pipeline = Pipeline([
-    ('preprocessor', preprocessor),
-    ('model', LinearRegression())
+    ("scaler", StandardScaler()),
+    ("model", RandomForestRegressor(
+        n_estimators=200,
+        max_depth=10,
+        random_state=42
+    ))
 ])
 
-print("Training model...")
+# -------------------------------
+# Train model
+# -------------------------------
+pipeline.fit(X_train, y_train)
 
-pipeline.fit(X, y)
+# -------------------------------
+# Evaluate
+# -------------------------------
+pred = pipeline.predict(X_test)
 
-os.makedirs("model", exist_ok=True)
+mae = mean_absolute_error(y_test, pred)
 
-model_path = "model/car_price_pipeline.pkl"
+print("Model MAE:", mae)
 
-print("Saving model...")
+# -------------------------------
+# Save model
+# -------------------------------
+joblib.dump(pipeline, MODEL_PATH)
 
-with open(model_path, "wb") as f:
-    pickle.dump(pipeline, f)
+print("Model saved to:", MODEL_PATH)
 
-print("Model saved at:", model_path)
+# -------------------------------
+# Example JSON prediction test
+# -------------------------------
+sample_json = {
+    "instances": [
+        [5, 85, 70, 7]
+    ]
+}
+
+sample_df = pd.DataFrame(
+    sample_json["instances"],
+    columns=X.columns
+)
+
+prediction = pipeline.predict(sample_df)
+
+print("Sample Prediction:", prediction)
