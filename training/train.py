@@ -24,6 +24,7 @@ preprocessor = ColumnTransformer([
     ('num', 'passthrough', numeric)
 ])
 
+
 # Pipeline
 pipeline = Pipeline([
     ('preprocessor', preprocessor),

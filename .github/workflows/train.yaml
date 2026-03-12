@@ -6,6 +6,7 @@ on:
       - "training/**"
       - "data/**"
       - "requirements.txt"
+      - ".github/workflows/train.yaml"
   workflow_dispatch:
 
 jobs:
